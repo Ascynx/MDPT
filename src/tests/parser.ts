@@ -1,20 +1,22 @@
 import { getFileData } from "../lib/utils/utils";
 import { Parser } from "../parser";
 import { Logger } from "./logger";
-export default (): boolean => {
+export default async (): Promise<boolean> => {
   let logger = Logger.getInstance();
   logger.setDebug(true);
     try {
     logger.sendMessage("starting test with module: parser");
     logger.sendMessage("starting parser instance")
-    const parser = Parser.getInstance(getFileData("./src/tests/testData.mdp"));
+    let parser = Parser.getInstance(getFileData("./test/testData.mdp"));
+    parser.data ? logger.sendMessage("test data exists") : logger.sendError("test data does not exist");
+
     logger.sendMessage("starting parsing");
-    parser.parseData();
+    parser = await parser.parseData();
     
     logger.sendMessage("returning test value");
     return parser.parsed == expectedOutput;
     } catch (e) {
-        logger.sendMessage(e);
+        logger.sendError(e);
         return false;
     };
 }   //TODO fix it

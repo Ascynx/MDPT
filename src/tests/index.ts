@@ -4,7 +4,7 @@ export const run = async () => {
     for (let module of Object.keys(ModuleList)) {
         let moduleData = ModuleList[module];
 
-        status.push({type: moduleData["name"], status: (await importFile(moduleData["filePath"]))()});
+        status.push({type: moduleData["name"], status: await (await importFile(moduleData["filePath"]))()});
     };
 
     console.table(status);

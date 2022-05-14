@@ -88,10 +88,24 @@ export class Parser {
     }
 
     parseData = async () => {
-            let logger = this.logger;
+        let logger = this.logger;
+
+        //initialize tokenization
+
+        let tokens: Token[] = [];
+        let charArray = this.data.split("");
+
+        charArray.forEach((char, index) => {
+                if (index == 0 || char == "\n") {
+                        tokens.push(new Token(index));
+                        if (char != "\n") tokens[tokens.length -1].addChar(char);
+                } else tokens[tokens.length -1].addChar(char);
+        })
+
         //error handler for unbalanced brackets
             let level = 0;
             let brackets: {index: number, char: string}[] = [];
+
             for (let i = 0; i < this.data.length; i++) {
                 let char = this.data.split("")[i];
                     if (char == "{") {
@@ -104,6 +118,7 @@ export class Parser {
 
                 
             }
+
             if (level != 0) {
                 for (let i = 0; i < brackets.length; i++) {
                         let bracket = brackets[i];
@@ -118,15 +133,74 @@ export class Parser {
                         }
                 }
 
+                for (let i = 0; i < brackets.length; i++) {
+                        let bracket = brackets[i];
+                        let line = 0;
+                        let char = 0;
+                        for (let i = 0; i < tokens.length; i++) {
+                                let nextToken = tokens[i + 1];
+                                
+                                if (bracket.index < nextToken.startIndex) {//if is on the current line
+                                        line = i + 1;//set the line to the current index
+                                        char = (bracket.index - tokens[i].startIndex)+1;
+                                        break;
+                                }
+        
+        
+                        }
+                        throw new Error("CompilerError: Found unbalanced bracket at line " + (line) + " character " + (char));
+
             }
-
-            for (let i = 0; i < brackets.length; i++) {
-                let bracket = brackets[i];
-                logger.sendError("Found unbalanced bracket at index " + bracket.index);
         }
-
-            if (brackets.length > 0) throw new Error("CompilerError: Unbalanced brackets");
         //ends here
+
+        //tokenization of this.data
+
+
+        //parsing of tokens
+        for (let token of tokens) {
+                for (const definition of this.regexes.definitions) {
+                        const regexes = definition.regexes;
+                        const type = definition.type;
+                        for (const regex of regexes) {
+                                const matches = token.storage.match(regex);
+
+                                if (matches) {
+                                        for (const match of matches) {
+                                                if (type == "function") {
+                                                        const data = regex.exec(match);
+
+                                                        const name = data?.groups.name;
+                                                        let argsArray = data?.groups.args?.split(",").map((arg) => arg.trim());
+
+                                                        let args: {[key: string]: string}[] = [];
+                                                        
+                                                        argsArray.forEach((arg) => {
+                                                                let argName = arg.split(":")[0]?.trim();
+                                                                let argType = arg.split(":")[1]?.trim();
+                                                                args.push({[argName]: argType});
+                                                        });
+
+                                                        const bodyStart = this.data.indexOf("{", token.startIndex);
+                                                        const bodyEnd = findMatching(this.data, bodyStart, ["{", "}"]);
+
+                                                        const body = this.data.substring(bodyStart + 1, bodyEnd-1);
+
+                                                        const func: FunctionType = {
+                                                                name,
+                                                                args,
+                                                                body,
+                                                                filePath: name.split("::").join("/"), //(functionName:functionName[0]/functionName[1]
+                                                        };
+
+
+                                                        this.parsed.functions.push(func);
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
 
 
         //const definitions = this.regexes.definitions;
@@ -266,7 +340,9 @@ export class Parser {
         //then do a second search to define the scope of each variable / function / function call
         //then do a third search to replace the variables / functions / functions calls with the correct values
         //then do a fourth search to find and replace the variables in datapack code
-    }
+    
+        return this;
+        }
 
 }
 
@@ -288,3 +364,23 @@ function findMatching(str, pos, brackets: string[]) {
     }
     return -1;
   }//probably search for the first using a regex then find the second one using the findClosingBracket then use both's indexes to define the body
+
+  class Token {
+        public startIndex: number;
+        public storage: string;
+
+        constructor(startIndex: number) {
+                this.startIndex = startIndex;
+                this.storage = "";
+                }
+
+
+        toString() {
+                return `startIndex: ${this.startIndex}, storage: ${this.storage}`;
+        };
+
+        addChar(char: string) {
+                this.storage += char;
+        }
+
+  }

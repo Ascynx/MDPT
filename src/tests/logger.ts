@@ -25,9 +25,8 @@ export class Logger {
     }
 
     public sendError(message: string): void {
-        let callStack = (new Error()).stack;
         if (this.isDebug) console.log("[DEBUG/ERROR] " + message);
-        console.error(`[${new Date().toLocaleTimeString()}/ERROR] ${message}\nthrown by ${callStack.split("\n")[2].trim().split(" ")[1].split(".")[0]}`);
+        console.error(`[${new Date().toLocaleTimeString()}/ERROR] ${message}`);
     }
 
     public sendWarning(message: string): void {
