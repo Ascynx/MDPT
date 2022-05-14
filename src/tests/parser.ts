@@ -1,17 +1,20 @@
 import { getFileData } from "../lib/utils/utils";
 import { Parser } from "../parser";
+import { Logger } from "./logger";
 export default (): boolean => {
+  let logger = Logger.getInstance();
+  logger.setDebug(true);
     try {
-    console.log("starting test with module: parser");
-    console.log("starting parser instance")
+    logger.sendMessage("starting test with module: parser");
+    logger.sendMessage("starting parser instance")
     const parser = Parser.getInstance(getFileData("./src/tests/testData.mdp"));
-    console.log("starting parsing");
+    logger.sendMessage("starting parsing");
     parser.parseData();
     
-    console.log("returning test value");
+    logger.sendMessage("returning test value");
     return parser.parsed == expectedOutput;
-    }catch (e) {
-        console.log(e);
+    } catch (e) {
+        logger.sendMessage(e);
         return false;
     };
 }   //TODO fix it

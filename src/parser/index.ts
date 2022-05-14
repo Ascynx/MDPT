@@ -1,4 +1,11 @@
+import { Logger } from "../tests/logger";
 import { FunctionType } from "../typings/functions";
+
+export class ParserError extends Error {
+        constructor(message: string) {
+                super(message);
+        }
+}
 
 export class Parser {
     data: string;
@@ -22,11 +29,13 @@ export class Parser {
                 description: string
             }
         };
+        logger: Logger;
 
     private static instance: Parser;
 
     private constructor(data: string) {
         this.data = data;
+        this.logger = Logger.getInstance();
 
         this.parsed = {
             variables: [],
@@ -79,6 +88,47 @@ export class Parser {
     }
 
     parseData = async () => {
+            let logger = this.logger;
+        //error handler for unbalanced brackets
+            let level = 0;
+            let brackets: {index: number, char: string}[] = [];
+            for (let i = 0; i < this.data.length; i++) {
+                let char = this.data.split("")[i];
+                    if (char == "{") {
+                        level++; 
+                        brackets.push({index: i, char});
+                    } else if (char == "}") {
+                        level--;
+                        brackets.push({index: i, char});
+                    }
+
+                
+            }
+            if (level != 0) {
+                for (let i = 0; i < brackets.length; i++) {
+                        let bracket = brackets[i];
+                        if (bracket.char == "{") {
+                                let closingBracket = findMatching(brackets.map((b) => b.char).join(""), i, ["{", "}"]);
+
+                                brackets = brackets.filter((b) => ![bracket.index, closingBracket.index].includes(b.index));
+                        } else if (bracket.char == "}") {
+                                let openingBracket = findMatching(brackets.map((b) => b.char).join(""), i, ["}", "{"]);
+
+                                brackets = brackets.filter((b) => ![bracket.index, openingBracket.index].includes(b.index));
+                        }
+                }
+
+            }
+
+            for (let i = 0; i < brackets.length; i++) {
+                let bracket = brackets[i];
+                logger.sendError("Found unbalanced bracket at index " + bracket.index);
+        }
+
+            if (brackets.length > 0) throw new Error("CompilerError: Unbalanced brackets");
+        //ends here
+
+
         //const definitions = this.regexes.definitions;
         //const data = this.data;
         //for (const definition of definitions) {
@@ -220,15 +270,15 @@ export class Parser {
 
 }
 
-function findClosingParenthesisIndex(str, pos) {
-    if (str[pos] !== '(') {
+function findMatching(str, pos, brackets: string[]) {
+    if (str[pos] !== brackets[0]) {
       throw new Error('The position must contain an opening bracket');
     }
     let level = 1;
     for (let index = pos + 1; index < str.length; index++) {
-      if (str[index] === '(') {
+      if (str[index] === brackets[0]) {
         level++;
-      } else if (str[index] === ')') {
+      } else if (str[index] === brackets[1]) {
         level--;
       }
       
@@ -237,20 +287,4 @@ function findClosingParenthesisIndex(str, pos) {
       }
     }
     return -1;
-  }
-
-  function findClosingBracketIndex(str, pos) {
-      let level = 1;
-      for (let index = pos + 1; index < str.length; index++) {
-            if (str[index] === "{") {
-                level++;
-            }
-            else if (str[index] === "}") {
-                level--;
-            }
-            if (level === 0) {
-                return index;
-            }
-        }
-        return -1;
   }//probably search for the first using a regex then find the second one using the findClosingBracket then use both's indexes to define the body

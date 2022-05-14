@@ -5,7 +5,7 @@ var _data: description = ahah funny go brrrrrrr;
 func amogus() {
     setblock 0 0 0 minecraft:bedrock
     var funny: string = amogus;
-}
+
 
 func too::much::gaming() {
     var local: string = amogus;

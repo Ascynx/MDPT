@@ -1,23 +1,24 @@
 import { getPackage } from "./lib/utils/utils";
 import { Client } from "./structures/client";
 import { run } from './tests/index';
+import { Logger } from "./tests/logger";
 
 async function main(args: string[]) {
     if (!args.length) throw new Error("No targets defined");
-
+    let logger = Logger.getInstance();
 
     if (args[0] == "-h" || args[0] == "--help") {
-        console.log("Usage: mdpt [target] [outputTarget] [options]");
-        console.log("Options:");
-        console.log("-h, --help: Show this help");
-        console.log("-v, --version: Show the version");
-        console.log("-t, --test: Run a test");
+        logger.sendMessage("Usage: mdpt [target] [outputTarget] [options]");
+        logger.sendMessage("Options:");
+        logger.sendMessage("-h, --help: Show this help");
+        logger.sendMessage("-v, --version: Show the version");
+        logger.sendMessage("-t, --test: Run a test");
 
         process.exit(0); // stops the compiler from trying to load a "-h" or "--help" file :skull:
     }
 
     if (args[0] == "-t" || args[0] == "--test") {
-        console.log("Testing...");
+        logger.sendMessage("Testing...");
         await run();
         process.exit(0);
     }
@@ -37,4 +38,4 @@ async function main(args: string[]) {
     await client.parseAndCompile();
 }
 
-main(process.argv.slice(2)).catch(console.error);
+main(process.argv.slice(2)).catch((e) => Logger.getInstance().sendError(e));

@@ -1,4 +1,4 @@
-# MDPT
+# MDPT - MinecraftDatapack+ Transpiler
 
 currently is under heavy development
 
