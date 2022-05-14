@@ -1,23 +1,26 @@
 name: build
+
 on: [push, pull_request]
+
 jobs:
   build:
-  runs-on: ubuntu-latest
-
-  steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 18.x
-    - name: Setup dependencies
-      run: npm i
-    - name: build project
-      run: npm run build --if-present
-    - name: create archive
-      run: zip release.zip ./* -r
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: node-app
-        path: release.zip
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+      - name: Setup dependencies
+        run: npm i
+      - name: build project
+        run: npm run build --if-present
+      - name: create archive
+        run: zip release.zip ./* -r
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: node-app
+          path: release.zip
