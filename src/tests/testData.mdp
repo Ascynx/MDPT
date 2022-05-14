@@ -1,0 +1,20 @@
+var _data: name = main;
+var _data: pack_format = 9;
+var _data: description = ahah funny go brrrrrrr;
+
+func amogus() {
+    setblock 0 0 0 minecraft:bedrock
+    var funny: string = amogus;
+}
+
+func too::much::gaming() {
+    var local: string = amogus;
+
+    var syntaxError: string = ahahahahahahahha
+}
+
+var minecraft/tags/functions/load.json: file = {
+    "values": [
+        "main:main/amogus"
+    ]
+};

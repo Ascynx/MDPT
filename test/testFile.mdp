@@ -1,0 +1,13 @@
+define globalScope: name = test;
+
+define name(args: amogus) {
+
+    }
+
+define test::name(args: coordinatesX) {
+    setblock args 0 0 minecraft:bedrock
+}(25)
+
+test::name(15)
+
+define name: type = value;

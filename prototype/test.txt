@@ -1,0 +1,80 @@
+#file to transpile into mcfunction
+
+
+
+globalScope {
+
+
+
+    define name(args) {
+
+    }
+
+    define test::name(args: coordinatesX) {
+        setblock args 0 0 minecraft:bedrock
+    }(25)
+
+    define funny(arg1: coordinatesX, arg2: coordinatesY) {
+        setblock arg1 arg2 0 minecraft:bedrock
+    }
+
+    test::name(15)
+
+}
+
+
+
+would transpile into
+
+
+
+#
+#   datapackName/data/functions/global.mcfunction
+#   datapackName/data/functions/name.mcfunction
+#   datapackName/data/functions/funny.mcfunction
+#   datapackName/data/functions/test/name.mcfunction
+#
+#   global.mcfunction content
+#   
+#       data modify storage datapackName name set value 0
+#
+#       data modify storage datapackName test.name set value 25              
+#       function test:name
+#
+#       data modify storage datapackName test.name set value 15
+#       function test:name
+#
+#
+#
+#   name.mcfunction content
+#
+#       
+#
+#   funny.mcfunction content
+#
+#       #setup values
+#
+#
+#       summon area_effect_cloud ~ ~ ~ {Duration: 1, Radius: 0f, Tags:['temp']}
+#
+#       execute store result entity @e[type=area_effect_cloud, tag=temp, limit=1] Pos[0] double 1 run data get storage datapackName funny.arg1
+#       execute store result entity @e[type=area_effect_cloud, tag=temp, limit=1] Pos[1] double 1 run data get storage datapackName funny.arg2
+#
+#       #function code
+#
+#       execute as @e[type=area_effect_cloud, tag=temp, limit=1] at @s run setblock ~ ~ 0 minecraft:bedrock
+#
+#
+#
+#
+#   test/name.mcfunction content
+#
+#       #setup values
+#
+#       summon area_effect_cloud ~ ~ ~ {Duration: 1, Radius: 0f, Tags:['temp']}
+#       
+#       execute store result entity @e[type=area_effect_cloud, tag=temp, limit=1] Pos[0] double 1 run data get storage datapackName test.name 
+#       
+#       #function code
+#
+#       execute as @e[type=area_effect_cloud, tag=temp, limit=1] at @s run setblock ~ 0 0 minecraft:bedrock 
