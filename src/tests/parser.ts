@@ -11,7 +11,8 @@ export default async (): Promise<boolean> => {
     parser.data ? logger.sendMessage("test data exists") : logger.sendError("test data does not exist");
 
     logger.sendMessage("starting parsing");
-    parser = await parser.parseData();
+    let status = await parser.parseData();
+    if (status == 1) return false;
     
     logger.sendMessage("returning test value");
     return parser.parsed == expectedOutput;

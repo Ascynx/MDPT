@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { Client } from '../structures/client';
+import { FileVariableType } from '../typings/variables';
 
 export class Compiler {
     public outDir: string;
@@ -53,7 +54,7 @@ export class Compiler {
             const name = func.name;
         }
 
-        for (const file of data.variables.filter(x => x.type == "file")) {
+        for (const file of (data.variables as FileVariableType[]).filter(x => x.type == "file")) {
             const filePath = file.filePath;
             let path = `${this.outDir}/${data.datapackData.name}/data/${filePath}`.split("/").slice(0, -1);
 

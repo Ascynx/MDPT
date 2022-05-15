@@ -1,5 +1,6 @@
 import { Logger } from "../tests/logger";
 import { FunctionType } from "../typings/functions";
+import { FileVariableType, VariableType } from "../typings/variables";
 
 export class ParserError extends Error {
         constructor(message: string) {
@@ -21,7 +22,7 @@ export class Parser {
       };
 
       parsed: {
-          variables: any[],
+          variables: VariableType[] | FileVariableType[],
             functions: FunctionType[],
             datapackData: {
                 name: string,
@@ -140,21 +141,20 @@ export class Parser {
                         for (let i = 0; i < tokens.length; i++) {
                                 let nextToken = tokens[i + 1];
                                 
-                                if (bracket.index < nextToken.startIndex) {//if is on the current line
-                                        line = i + 1;//set the line to the current index
+                                if (bracket.index < nextToken.startIndex) {
+                                        line = i + 1;
                                         char = (bracket.index - tokens[i].startIndex)+1;
                                         break;
                                 }
         
         
                         }
-                        throw new Error("CompilerError: Found unbalanced bracket at line " + (line) + " character " + (char));
+                        logger.sendError("CompilerError: Found unbalanced bracket at line " + (line) + " character " + (char));
+                        return 1;
 
             }
         }
         //ends here
-
-        //tokenization of this.data
 
 
         //parsing of tokens
@@ -168,7 +168,8 @@ export class Parser {
                                 if (matches) {
                                         for (const match of matches) {
                                                 if (type == "function") {
-                                                        const data = regex.exec(match);
+                                                        let data = regex.exec(match);
+                                                        if (!data) data = regex.exec(match);
 
                                                         const name = data?.groups.name;
                                                         let argsArray = data?.groups.args?.split(",").map((arg) => arg.trim());
@@ -195,6 +196,57 @@ export class Parser {
 
 
                                                         this.parsed.functions.push(func);
+                                                } else if (type == "variable") {
+                                                        let data = regex.exec(match);
+                                                        if (!data) data = regex.exec(match);
+
+                                                        const name = data?.groups.name;
+                                                        const type = data?.groups.type;
+                                                        const value = data?.groups.value;
+
+
+                                                        //define scope
+
+                                                        this.parsed.functions.forEach((func) => {
+                                                                let funcData = regex.exec(func.body);
+                                                                if (!funcData) funcData = regex.exec(func.body);
+
+                                                                funcData.groups.value = funcData?.groups.value?.trim();
+                                                                let setOfValues = new Set([...Object.values(funcData?.groups),...Object.values(data?.groups)]);
+
+                                                                if (setOfValues.size == 3) {
+                                                                        (func.localVariables as VariableType[]).push({
+                                                                                name,
+                                                                                type, 
+                                                                                value
+                                                                        });
+                                                                        data.groups.name = func.name + "::" + data?.groups.name;
+                                                                }
+                                                        });
+                                                        //ends here
+
+                                                        const variable: VariableType = {
+                                                                name,
+                                                                type,
+                                                                value
+                                                        };
+
+                                                        (this.parsed.variables as VariableType[]).push(variable);
+
+                                                } else if (type == "functioncall") {
+                                                        let data = regex.exec(match);
+                                                        if (!data) data = regex.exec(match);
+
+                                                        const name = data?.groups.name;
+                                                        let args = data?.groups.args?.split(",").map((arg) => arg.trim());
+
+
+                                                        if (!this.parsed.functions.map((func) => func.name).includes(name)) {
+                                                                logger.sendError("CompilerError: Function " + name + " is not defined");
+                                                                return 1;
+                                                        }
+
+
                                                 }
                                         }
                                 }
