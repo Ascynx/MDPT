@@ -33,4 +33,8 @@ export class Logger {
         if (this.isDebug) console.log("[DEBUG/WARNING] " + message);
         console.warn(`[${new Date().toLocaleTimeString()}/WARNING] ${message}`);
     }
+
+    public sendDebug(message: string): void {
+        if (this.isDebug) console.log(`[${new Date().toLocaleTimeString()}/DEBUG] ${message}`);
+    }//only sends if the logger was instantiated with debug enabled
 }

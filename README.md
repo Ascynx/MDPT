@@ -19,7 +19,9 @@ but setting the base for it and proving it would be possible to do
 
 ## Current status
 
-* Parser is in need of a rewrite due to a huge bug with function definition inside a function
+* Middleman missing the translating algorithm
+
+* Parser was rewritten to use tokenization + regex instead of pure regex
 
 * Compiler does it's current job, but I don't think it's currently enough for the duration of the project's development
 

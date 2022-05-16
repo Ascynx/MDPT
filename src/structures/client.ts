@@ -1,11 +1,14 @@
 import { Compiler } from "../compiler";
-import { Parser } from "../parser";
+import { ParsedData, Parser } from "../parser";
 import * as fs from 'fs';
+import { MiddlemanHandler } from "../middleman";
+import { datapackDataTranslator, functionTranslator, Translator } from "../middleman/translator";
 
 export class Client {
     private static instance: Client;
     compiler: Compiler;
     parser: Parser;
+    middleManHandler: MiddlemanHandler;
     source: string;// data that's used for parsing
     outDir: string;
     inDir: string;
@@ -20,12 +23,21 @@ export class Client {
 
         this.compiler = Compiler.getInstance(outDir);
         this.parser = Parser.getInstance(this.source);
+        this.middleManHandler = MiddlemanHandler.getInstance(this.parser.parsed);
+        //setup middlemans
+        let translator = Translator.getInstance(this.parser.parsed);
+        translator.addModule(datapackDataTranslator.getInstance());
+        translator.addModule(functionTranslator.getInstance());
+
+        this.middleManHandler.registerHandler(translator);
+
         this.package = this.getPackage();
 
     }
 
     public static async getInstance (inDir?: string, outDir?: string): Promise<Client> {
         if (!Client.instance) {
+            if (!inDir) return;
             Client.instance = new Client(inDir, outDir);
         }
         return await Client.instance;
@@ -50,6 +62,11 @@ export class Client {
     public parseAndCompile = async () => {
         await this.parser.parseData();
         await this.compiler.compile();
+    }
+
+    public postParsedData(data: ParsedData) {
+        this.middleManHandler.setData(data);
+        this.middleManHandler.runHandlers();
     }
 
 }
