@@ -4,10 +4,11 @@ import { run } from './tests/index';
 import { Logger } from "./tests/logger";
 import * as fs from 'fs';
 import { Settings } from "./modules/settings";
-import { getUpdate } from "./modules/updater";
+import { getUpdate, gitFetchJson } from "./modules/updater";
 import fetch from 'node-fetch';
 import * as child_process from 'child_process';
 import * as readline from 'readline';
+import { GitAsset } from "./typings/git";
 
 async function main(args: string[]) {
     if (!args.length) throw new Error("No targets defined");
@@ -65,8 +66,9 @@ async function main(args: string[]) {
                 rl.question("Do you want to update? (y/n)\n", async (answer) => {
                     switch (answer) {
                         case "y":
+                            const assets: GitAsset[] = await (await gitFetchJson(update.assets_url))
                             logger.sendMessage("Downloading...");
-                            const zip = (await fetch(update.zipball_url)).arrayBuffer;
+                            const zip = await (await fetch(assets[0].browser_download_url)).arrayBuffer();
                             fs.writeFileSync(`${process.cwd()}/update.zip`, Buffer.from(zip));
 
                             logger.sendMessage("Extracting...");
@@ -81,7 +83,7 @@ async function main(args: string[]) {
                             logger.sendMessage("Done! Closing...");
 
                             rl.close();
-                            
+
                             break;
                             default: 
                             logger.sendMessage("Aborted!");

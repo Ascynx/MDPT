@@ -3,7 +3,7 @@ import { GitRelease } from '../typings/git';
 
 const updateLink = `https://api.github.com/repos/Ascynx/MDPT/releases/latest`;
 
-const gitFetchJson = async (url: string) => {
+export const gitFetchJson = async (url: string) => {
     const body = await fetch(url);
 
     const json: any = await body.json();
