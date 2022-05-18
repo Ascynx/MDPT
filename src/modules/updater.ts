@@ -8,7 +8,7 @@ const gitFetchJson = async (url: string) => {
 
     const json: any = await body.json();
 
-    if (!json.ok) return new Error(`${json?.status ? json.status : "unknown error"} - ${json?.statusText ? json.statusText : "unknown cause"}`);
+    if (!body.ok) return new Error(`${json?.status ? json.status : "unknown error"} - ${json?.statusText ? json.statusText : "unknown cause"}`);
     if (json.message) return new Error(`Error 404 - ${json.message}`);
 
     return json;
