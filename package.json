@@ -1,6 +1,6 @@
 {
   "name": "minecraftdatapackplus-transpiler",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a transpiler to transform .mdp files to minecraft datapack projects",
   "main": "dist/index.js",
   "scripts": {

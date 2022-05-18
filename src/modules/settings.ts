@@ -10,7 +10,7 @@ export class Settings {
     private static instance: Settings;
 
     private constructor() {
-        this.hasBeenRunOnce = true;
+        this.hasBeenRunOnce = false;
         this.language = "en";
     }
 
@@ -22,7 +22,20 @@ export class Settings {
     }
 
     save() {
-        fs.writeFileSync(__dirname.slice(0, -1) + "/settings.json", JSON.stringify(this));
+        fs.writeFileSync(`${process.cwd()}/settings.json`, JSON.stringify(this), {flag: "w"});
+
+        return this;
+    }
+
+    load(strinfigied: string) {
+        //tranforms the stringified settings into a Settings class object
+
+        let settings = JSON.parse(strinfigied);
+        for (let key of Object.keys(settings)) {
+            this[key] = settings[key];
+        };
+        
+        return this;
     }
 
 }
