@@ -3,6 +3,7 @@ import { ParsedData, Parser } from "../parser";
 import * as fs from 'fs';
 import { MiddlemanHandler } from "../middleman";
 import { datapackDataTranslator, functionTranslator, Translator } from "../middleman/translator";
+import { Settings } from "../modules/settings";
 
 export class Client {
     private static instance: Client;
@@ -13,6 +14,7 @@ export class Client {
     outDir: string;
     inDir: string;
     package: any;
+    private settings: Settings | any;
 
     
     private constructor(inDir?: string, outDir: string = "./out") {
@@ -24,6 +26,7 @@ export class Client {
         this.compiler = Compiler.getInstance(outDir);
         this.parser = Parser.getInstance(this.source);
         this.middleManHandler = MiddlemanHandler.getInstance(this.parser.parsed);
+        
         //setup middlemans
         let translator = Translator.getInstance(this.parser.parsed);
         translator.addModule(datapackDataTranslator.getInstance());
@@ -35,12 +38,20 @@ export class Client {
 
     }
 
-    public static async getInstance (inDir?: string, outDir?: string): Promise<Client> {
+    public static getInstance (inDir?: string, outDir?: string): Client {
         if (!Client.instance) {
             if (!inDir) return;
             Client.instance = new Client(inDir, outDir);
         }
-        return await Client.instance;
+        return Client.instance;
+    }
+
+    public setSettings(settings: Settings | any) {
+        this.settings = settings;
+    };
+    
+    public getSettings(): Settings | any {
+        return this.settings;
     }
 
     private getFileData = (filePath: string) => {
